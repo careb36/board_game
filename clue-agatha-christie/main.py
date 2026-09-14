@@ -123,7 +123,8 @@ def hacer_acusacion(juego: Juego, jugador):
     print("-" * 40)
     
     # Obtener sospechoso
-    sospechosos = [c.nombre for c in juego.mazo.get_cartas_por_tipo('sospechoso')]
+    from src.cartas import TipoCarta
+    sospechosos = [c.nombre for c in juego.mazo.get_cartas_por_tipo(TipoCarta.SOSPECHOSO)]
     print("\nSospechosos:")
     for i, s in enumerate(sospechosos, 1):
         print(f"   {i}. {s}")
