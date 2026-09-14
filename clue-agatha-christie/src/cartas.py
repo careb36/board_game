@@ -84,7 +84,7 @@ class Mazo:
         for nombre, desc in armas:
             self.cartas.append(Carta(nombre, TipoCarta.ARMA, desc))
     
-    def preparar_juego(self) -> Dict[TipoCarta, Carta]:
+    def preparar_juego(self) -> Dict[str, object]:
         """
         Prepara el juego seleccionando las cartas del crimen
         y barajando el resto
