@@ -116,7 +116,7 @@ class Mazo:
             "crimen": self.sobre_crimen
         }
     
-    def obtener_carta(self, nombre: str) -> Carta:
+    def obtener_carta(self, nombre: str) -> Carta | None:
         """Busca una carta por nombre"""
         for carta in self.cartas:
             if carta.nombre.lower() == nombre.lower():
