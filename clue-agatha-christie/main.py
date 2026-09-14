@@ -1,6 +1,10 @@
 """
 Misterio en la Mansión Blackwood - Módulo Principal
 Inspirado en Agatha Christie
+
+Punto de entrada del juego en modo consola. Gestiona el menú principal,
+la configuración de jugadores, el bucle de turnos y las acusaciones
+(normales y finales) a través de una interfaz interactiva de texto.
 """
 
 from src.juego import Juego, Acusacion
@@ -9,7 +13,15 @@ from src.utils import mostrar_menu, esperar_enter, limpiar_pantalla
 
 
 def configurar_jugadores() -> list:
-    """Configura los jugadores para la partida"""
+    """Solicita interactivamente los datos de los jugadores para la partida.
+
+    Pide el nombre de cada jugador y si será controlado por la IA. La
+    configuración termina cuando el usuario escribe ``'inicio'`` y hay al
+    menos 2 jugadores, o cuando se alcanza el máximo de 6.
+
+    Returns:
+        Lista de tuplas ``(nombre, es_ia)`` con los datos de cada jugador.
+    """
     print("\n" + "=" * 50)
     print("👥 CONFIGURACIÓN DE JUGADORES")
     print("=" * 50)
@@ -42,7 +54,15 @@ def configurar_jugadores() -> list:
 
 
 def turno_jugador(juego: Juego):
-    """Gestiona el turno de un jugador humano"""
+    """Gestiona el turno completo de un jugador humano.
+
+    Muestra el menú de acciones disponibles (moverse, acusar, ver cartas,
+    acusación final o pasar turno) y delega en las funciones correspondientes.
+    Al finalizar, avanza el turno al siguiente jugador.
+
+    Args:
+        juego: Instancia del juego en curso.
+    """
     jugador = juego.gestor_jugadores.jugador_actual()
     
     if not jugador:
@@ -118,7 +138,15 @@ def turno_jugador(juego: Juego):
 
 
 def hacer_acusacion(juego: Juego, jugador):
-    """Permite al jugador hacer una acusación normal"""
+    """Guía al jugador a través del proceso de formular una acusación normal.
+
+    Solicita el sospechoso y el arma; la habitación se toma automáticamente
+    de la posición actual del jugador. Muestra el resultado de la refutación.
+
+    Args:
+        juego: Instancia del juego en curso.
+        jugador: Jugador que formula la acusación.
+    """
     print("\n🔍 FORMULAR ACUSACIÓN")
     print("-" * 40)
     
@@ -175,7 +203,16 @@ def hacer_acusacion(juego: Juego, jugador):
 
 
 def hacer_acusacion_final(juego: Juego, jugador):
-    """Permite al jugador hacer una acusación final para ganar"""
+    """Guía al jugador a través del proceso de formular la acusación final.
+
+    Solicita confirmación antes de continuar, ya que una acusación final
+    incorrecta elimina al jugador de la partida. Luego pide el sospechoso,
+    la habitación y el arma, y muestra el resultado (victoria o eliminación).
+
+    Args:
+        juego: Instancia del juego en curso.
+        jugador: Jugador que intenta resolver el crimen.
+    """
     print("\n🎯 ¡ACUSACIÓN FINAL!")
     print("=" * 40)
     print("⚠️ Si fallas, quedarás eliminado del juego")
@@ -242,7 +279,12 @@ def hacer_acusacion_final(juego: Juego, jugador):
 
 
 def main():
-    """Función principal del juego"""
+    """Punto de entrada principal del juego en modo consola.
+
+    Muestra el menú principal y gestiona las opciones: iniciar una nueva
+    partida (configurar jugadores, bucle de turnos hasta encontrar ganador o
+    quedarse sin jugadores), mostrar créditos o salir.
+    """
     print("\n" + "=" * 50)
     print("🕵️ MISTERIO EN LA MANSIÓN BLACKWOOD")
     print("   Un juego inspirado en Agatha Christie")

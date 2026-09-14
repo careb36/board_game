@@ -1,6 +1,12 @@
 """
 Misterio en la Mansión Blackwood - Sistema de Cartas
 Inspirado en Agatha Christie
+
+Este módulo define las clases que representan las cartas del juego:
+- TipoCarta: enumeración de los tres tipos de carta (sospechoso, habitación, arma).
+- Carta: una carta individual con nombre, tipo y descripción opcional.
+- Mazo: gestión del conjunto completo de cartas, incluyendo la selección del
+  sobre del crimen y la distribución de cartas entre jugadores.
 """
 
 import random
@@ -9,13 +15,30 @@ from enum import Enum
 
 
 class TipoCarta(Enum):
+    """Tipos de carta posibles en el juego."""
+
     SOSPECHOSO = "sospechoso"
     HABITACION = "habitacion"
     ARMA = "arma"
 
 
 class Carta:
+    """Representa una carta individual del mazo.
+
+    Attributes:
+        nombre (str): Nombre identificador de la carta.
+        tipo (TipoCarta): Categoría a la que pertenece la carta.
+        descripcion (str): Descripción narrativa opcional de la carta.
+    """
+
     def __init__(self, nombre: str, tipo: TipoCarta, descripcion: str = ""):
+        """Inicializa una carta.
+
+        Args:
+            nombre: Nombre de la carta (p. ej. "Victoria Sterling").
+            tipo: Categoría de la carta (sospechoso, habitación o arma).
+            descripcion: Texto descriptivo opcional sobre la carta.
+        """
         self.nombre = nombre
         self.tipo = tipo
         self.descripcion = descripcion
@@ -33,14 +56,25 @@ class Carta:
 
 
 class Mazo:
-    """Gestiona el mazo de cartas del juego"""
+    """Gestiona el mazo completo de cartas del juego.
+
+    Attributes:
+        cartas (List[Carta]): Todas las cartas del mazo (21 en total).
+        sobre_crimen (Dict[TipoCarta, Carta]): Las tres cartas seleccionadas
+            como solución del crimen (sospechoso, habitación y arma).
+    """
     
     def __init__(self):
+        """Inicializa el mazo vacío."""
         self.cartas: List[Carta] = []
         self.sobre_crimen: Dict[TipoCarta, Carta] = {}
         
     def crear_cartas_base(self):
-        """Crea las cartas estándar del juego"""
+        """Crea las 21 cartas estándar del juego.
+
+        Genera 6 cartas de tipo sospechoso, 9 de tipo habitación y
+        6 de tipo arma, almacenándolas en ``self.cartas``.
+        """
         # Sospechosos
         sospechosos = [
             ("Victoria Sterling", "La sobrina ambiciosa del Lord"),
@@ -85,9 +119,19 @@ class Mazo:
             self.cartas.append(Carta(nombre, TipoCarta.ARMA, desc))
     
     def preparar_juego(self) -> Dict[TipoCarta, Carta]:
-        """
-        Prepara el juego seleccionando las cartas del crimen
-        y barajando el resto
+        """Prepara el mazo para una nueva partida.
+
+        Si las cartas aún no han sido creadas, invoca ``crear_cartas_base``.
+        A continuación selecciona aleatoriamente una carta de cada tipo para
+        formar el sobre del crimen, y baraja el resto.
+
+        Returns:
+            Un diccionario con dos entradas:
+
+            - ``"crimen"`` → ``Dict[TipoCarta, Carta]``: las tres cartas del
+              sobre del crimen.
+            - ``"juego"`` → ``List[Carta]``: las 18 cartas restantes
+              barajadas, listas para repartir entre los jugadores.
         """
         if not self.cartas:
             self.crear_cartas_base()
@@ -116,15 +160,30 @@ class Mazo:
             "crimen": self.sobre_crimen
         }
     
-    def obtener_carta(self, nombre: str) -> Carta:
-        """Busca una carta por nombre"""
+    def obtener_carta(self, nombre: str) -> "Carta":
+        """Busca y devuelve una carta por su nombre (insensible a mayúsculas).
+
+        Args:
+            nombre: Nombre de la carta a buscar.
+
+        Returns:
+            La instancia de ``Carta`` encontrada, o ``None`` si no existe.
+        """
         for carta in self.cartas:
             if carta.nombre.lower() == nombre.lower():
                 return carta
         return None
     
     def get_cartas_por_tipo(self, tipo: TipoCarta) -> List[Carta]:
-        """Obtiene todas las cartas de un tipo"""
+        """Devuelve todas las cartas que pertenecen a un tipo dado.
+
+        Args:
+            tipo: Tipo de carta a filtrar (``TipoCarta.SOSPECHOSO``,
+                ``TipoCarta.HABITACION`` o ``TipoCarta.ARMA``).
+
+        Returns:
+            Lista de cartas del tipo solicitado.
+        """
         return [c for c in self.cartas if c.tipo == tipo]
 
 

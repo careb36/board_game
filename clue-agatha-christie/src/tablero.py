@@ -1,6 +1,12 @@
 """
 Misterio en la Mansión Blackwood - Tablero y Movimientos
 Inspirado en Agatha Christie
+
+Este módulo define la representación física de la mansión:
+- HabitacionNombre: enumeración de las nueve habitaciones disponibles.
+- Habitacion: modelo de una habitación individual con sus conexiones.
+- Tablero: gestión completa del mapa de la mansión y la validación de
+  movimientos entre habitaciones adyacentes.
 """
 
 from typing import List, Dict, Optional, Tuple
@@ -8,6 +14,8 @@ from enum import Enum
 
 
 class HabitacionNombre(Enum):
+    """Nombres canónicos de las habitaciones de la Mansión Blackwood."""
+
     BIBLIOTECA = "Biblioteca"
     SALON = "Salón Principal"
     COMEDOR = "Comedor"
@@ -20,15 +28,32 @@ class HabitacionNombre(Enum):
 
 
 class Habitacion:
-    """Representa una habitación en la mansión"""
+    """Representa una habitación individual dentro de la mansión.
+
+    Attributes:
+        nombre (HabitacionNombre): Identificador enumerado de la habitación.
+        descripcion (str): Breve descripción narrativa de la habitación.
+        conexiones (List[HabitacionNombre]): Habitaciones adyacentes a las
+            que se puede acceder directamente desde ésta.
+    """
     
     def __init__(self, nombre: HabitacionNombre, descripcion: str):
+        """Inicializa la habitación con su nombre y descripción.
+
+        Args:
+            nombre: Identificador enumerado de la habitación.
+            descripcion: Texto descriptivo de la habitación.
+        """
         self.nombre = nombre
         self.descripcion = descripcion
         self.conexiones: List[HabitacionNombre] = []
     
     def agregar_conexion(self, habitacion: HabitacionNombre):
-        """Agrega una conexión a otra habitación"""
+        """Registra una habitación adyacente si aún no está conectada.
+
+        Args:
+            habitacion: Habitación a la que se desea agregar la conexión.
+        """
         if habitacion not in self.conexiones:
             self.conexiones.append(habitacion)
     
@@ -37,15 +62,24 @@ class Habitacion:
 
 
 class Tablero:
-    """Gestiona el tablero de la mansión"""
+    """Gestiona el mapa completo de la Mansión Blackwood.
+
+    Crea las nueve habitaciones y establece las conexiones bidireccionales
+    entre ellas según el layout de la mansión.
+
+    Attributes:
+        habitaciones (Dict[HabitacionNombre, Habitacion]): Mapa de
+            identificador → instancia de habitación.
+    """
     
     def __init__(self):
+        """Inicializa el tablero creando habitaciones y conexiones."""
         self.habitaciones: Dict[HabitacionNombre, Habitacion] = {}
         self._crear_habitaciones()
         self._crear_conexiones()
     
     def _crear_habitaciones(self):
-        """Crea todas las habitaciones de la mansión"""
+        """Instancia las nueve habitaciones de la mansión con sus descripciones."""
         descripciones = {
             HabitacionNombre.BIBLIOTECA: "Llena de libros antiguos y secretos familiares",
             HabitacionNombre.SALON: "Elegante con muebles victorianos y candelabros",
@@ -127,7 +161,14 @@ class Tablero:
                 self.habitaciones[conectada].agregar_conexion(habitacion)
     
     def obtener_habitacion(self, nombre: HabitacionNombre) -> Optional[Habitacion]:
-        """Obtiene una habitación por su nombre"""
+        """Devuelve la habitación asociada a un identificador.
+
+        Args:
+            nombre: Identificador enumerado de la habitación.
+
+        Returns:
+            La instancia de ``Habitacion`` o ``None`` si no existe.
+        """
         return self.habitaciones.get(nombre)
     
     def es_movimiento_valido(
@@ -135,20 +176,42 @@ class Tablero:
         origen: HabitacionNombre, 
         destino: HabitacionNombre
     ) -> bool:
-        """Verifica si un movimiento entre habitaciones es válido"""
+        """Indica si un jugador puede moverse directamente entre dos habitaciones.
+
+        Args:
+            origen: Habitación de partida.
+            destino: Habitación de destino.
+
+        Returns:
+            ``True`` si las habitaciones existen y están directamente
+            conectadas, ``False`` en caso contrario.
+        """
         if origen not in self.habitaciones or destino not in self.habitaciones:
             return False
         
         return destino in self.habitaciones[origen].conexiones
     
     def obtener_vecinas(self, habitacion: HabitacionNombre) -> List[HabitacionNombre]:
-        """Obtiene las habitaciones adyacentes"""
+        """Devuelve la lista de habitaciones adyacentes a una dada.
+
+        Args:
+            habitacion: Habitación de la que se quieren conocer las vecinas.
+
+        Returns:
+            Lista de identificadores de habitaciones adyacentes, o una
+            lista vacía si la habitación no existe en el tablero.
+        """
         if habitacion not in self.habitaciones:
             return []
         return self.habitaciones[habitacion].conexiones
     
     def mostrar_tablero(self) -> str:
-        """Muestra el layout del tablero"""
+        """Genera una representación legible del tablero con todas las conexiones.
+
+        Returns:
+            Cadena de texto con el mapa completo de la mansión, listando
+            cada habitación junto a su descripción y habitaciones conectadas.
+        """
         output = []
         output.append("🏰 MANSIÓN BLACKWOOD - Mapa de Habitaciones")
         output.append("=" * 50)
@@ -162,7 +225,12 @@ class Tablero:
         return "\n".join(output)
     
     def get_todas_las_habitaciones(self) -> List[HabitacionNombre]:
-        """Retorna lista de todas las habitaciones"""
+        """Devuelve la lista de todos los identificadores de habitación.
+
+        Returns:
+            Lista de valores ``HabitacionNombre`` en el orden en que fueron
+            registrados al construir el tablero.
+        """
         return list(self.habitaciones.keys())
 
 

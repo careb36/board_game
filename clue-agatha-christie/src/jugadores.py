@@ -1,6 +1,12 @@
 """
 Misterio en la Mansión Blackwood - Gestión de Jugadores
 Inspirado en Agatha Christie
+
+Este módulo define las clases que modelan a los participantes de la partida:
+- Jugador: representa a un jugador (humano o IA) con su mano de cartas,
+  posición en el tablero y notas de investigación.
+- GestorJugadores: coordina el turno de juego y las operaciones colectivas
+  sobre el conjunto de jugadores (reparto de cartas, eliminación, etc.).
 """
 
 from typing import List, Dict, Optional, Set
@@ -9,9 +15,27 @@ from src.tablero import HabitacionNombre
 
 
 class Jugador:
-    """Representa un jugador en el juego"""
+    """Representa a un jugador dentro de la partida.
+
+    Attributes:
+        nombre (str): Nombre del jugador.
+        es_ia (bool): ``True`` si el jugador está controlado por la IA.
+        cartas (List[Carta]): Cartas repartidas a este jugador.
+        habitacion_actual (Optional[HabitacionNombre]): Habitación en la que
+            se encuentra el jugador, o ``None`` antes de iniciar la partida.
+        notas (Dict[TipoCarta, Set[str]]): Pistas positivas anotadas durante
+            la investigación (cartas confirmadas que pertenecen a alguien).
+        eliminados (Dict[TipoCarta, Set[str]]): Cartas descartadas como
+            posibles componentes del crimen por haber sido mostradas.
+    """
     
     def __init__(self, nombre: str, es_ia: bool = False):
+        """Inicializa un jugador con mano y notas vacías.
+
+        Args:
+            nombre: Nombre identificador del jugador.
+            es_ia: Si es ``True``, el jugador es controlado por la IA.
+        """
         self.nombre = nombre
         self.es_ia = es_ia
         self.cartas: List[Carta] = []
@@ -28,21 +52,46 @@ class Jugador:
         }
     
     def agregar_carta(self, carta: Carta):
-        """Agrega una carta a la mano del jugador"""
+        """Añade una carta a la mano del jugador.
+
+        Args:
+            carta: Carta que se entrega al jugador.
+        """
         self.cartas.append(carta)
     
     def tiene_carta(self, carta: Carta) -> bool:
-        """Verifica si el jugador tiene una carta específica"""
+        """Comprueba si el jugador posee una carta concreta.
+
+        Args:
+            carta: Carta cuya presencia se quiere verificar.
+
+        Returns:
+            ``True`` si la carta está en la mano del jugador.
+        """
         return carta in self.cartas
     
     def mostrar_cartas(self) -> List[str]:
-        """Retorna lista de nombres de cartas"""
+        """Devuelve los nombres de todas las cartas en mano.
+
+        Returns:
+            Lista de cadenas con los nombres de las cartas.
+        """
         return [c.nombre for c in self.cartas]
     
     def puede_refutar(self, sospechoso: str, habitacion: str, arma: str) -> Optional[Carta]:
-        """
-        Verifica si el jugador puede refutar una acusación
-        Retorna la carta que refuta o None si no puede
+        """Determina si el jugador puede refutar una acusación.
+
+        Recorre la mano del jugador y devuelve la primera carta cuyo nombre
+        coincida con alguno de los tres elementos de la acusación.
+
+        Args:
+            sospechoso: Nombre del sospechoso acusado.
+            habitacion: Nombre de la habitación acusada.
+            arma: Nombre del arma acusada.
+
+        Returns:
+            La primera ``Carta`` que refuta la acusación, o ``None`` si el
+            jugador no puede refutar ninguno de los tres elementos.
         """
         for carta in self.cartas:
             if carta.nombre in [sospechoso, habitacion, arma]:
@@ -50,9 +99,14 @@ class Jugador:
         return None
     
     def agregar_nota(self, tipo: TipoCarta, nombre: str, es_negativo: bool = False):
-        """
-        Agrega una nota a la hoja de investigación
-        Si es_negativo=True, significa que esa carta NO es del crimen
+        """Registra una nota en la hoja de investigación del jugador.
+
+        Args:
+            tipo: Tipo de carta al que pertenece la pista.
+            nombre: Nombre de la carta sobre la que se toma la nota.
+            es_negativo: Si es ``True``, la nota indica que esa carta
+                **no** forma parte del crimen (fue mostrada por otro jugador).
+                Si es ``False``, la nota es una pista positiva de interés.
         """
         if es_negativo:
             self.eliminados[tipo].add(nombre)
@@ -60,7 +114,15 @@ class Jugador:
             self.notas[tipo].add(nombre)
     
     def obtener_eliminatorias(self, tipo: TipoCarta) -> Set[str]:
-        """Obtiene las cartas eliminadas para un tipo"""
+        """Devuelve el conjunto de cartas descartadas para un tipo dado.
+
+        Args:
+            tipo: Tipo de carta a consultar.
+
+        Returns:
+            Conjunto de nombres de cartas que han sido descartadas como
+            posibles componentes del crimen para ese tipo.
+        """
         return self.eliminados[tipo]
     
     def __repr__(self):
@@ -68,20 +130,45 @@ class Jugador:
 
 
 class GestorJugadores:
-    """Gestiona todos los jugadores en la partida"""
+    """Coordina a todos los jugadores durante la partida.
+
+    Mantiene el orden de turnos, reparte las cartas y proporciona métodos
+    de búsqueda y manipulación del conjunto de jugadores activos.
+
+    Attributes:
+        jugadores (List[Jugador]): Lista ordenada de jugadores activos.
+        turno_actual (int): Índice del jugador cuyo turno está en curso.
+    """
     
     def __init__(self):
+        """Inicializa el gestor sin jugadores y con el turno en la posición 0."""
         self.jugadores: List[Jugador] = []
         self.turno_actual: int = 0
     
     def agregar_jugador(self, nombre: str, es_ia: bool = False) -> Jugador:
-        """Agrega un nuevo jugador"""
+        """Crea un nuevo jugador y lo añade a la partida.
+
+        Args:
+            nombre: Nombre del jugador.
+            es_ia: Si es ``True``, el jugador es controlado por la IA.
+
+        Returns:
+            La instancia de ``Jugador`` recién creada.
+        """
         jugador = Jugador(nombre, es_ia)
         self.jugadores.append(jugador)
         return jugador
     
     def repartir_cartas(self, cartas: List[Carta]):
-        """Reparte las cartas equitativamente entre los jugadores"""
+        """Distribuye las cartas equitativamente en orden circular.
+
+        Las cartas se asignan de forma rotativa (estilo round-robin) entre
+        todos los jugadores activos. Si no hay jugadores, no se hace nada.
+
+        Args:
+            cartas: Lista de cartas a repartir (habitualmente las 18 cartas
+                que no forman parte del sobre del crimen).
+        """
         num_jugadores = len(self.jugadores)
         if num_jugadores == 0:
             return
@@ -91,17 +178,28 @@ class GestorJugadores:
             self.jugadores[jugador_idx].agregar_carta(carta)
     
     def siguiente_turno(self):
-        """Avanza al siguiente turno"""
+        """Avanza el turno al siguiente jugador de la lista (rotación circular)."""
         self.turno_actual = (self.turno_actual + 1) % len(self.jugadores)
     
     def jugador_actual(self) -> Optional[Jugador]:
-        """Retorna el jugador cuyo turno es"""
+        """Devuelve el jugador cuyo turno está activo.
+
+        Returns:
+            El ``Jugador`` en el turno actual, o ``None`` si no hay jugadores.
+        """
         if not self.jugadores:
             return None
         return self.jugadores[self.turno_actual]
     
     def obtener_jugador(self, nombre: str) -> Optional[Jugador]:
-        """Busca un jugador por nombre"""
+        """Busca un jugador por nombre (insensible a mayúsculas).
+
+        Args:
+            nombre: Nombre del jugador a buscar.
+
+        Returns:
+            La instancia de ``Jugador`` encontrada, o ``None`` si no existe.
+        """
         for jugador in self.jugadores:
             if jugador.nombre.lower() == nombre.lower():
                 return jugador
@@ -112,15 +210,31 @@ class GestorJugadores:
         jugador: Jugador, 
         habitacion: HabitacionNombre
     ):
-        """Coloca un jugador en una habitación inicial"""
+        """Asigna la habitación inicial a un jugador al arrancar la partida.
+
+        Args:
+            jugador: Jugador al que se asigna la posición.
+            habitacion: Habitación donde se coloca al jugador.
+        """
         jugador.habitacion_actual = habitacion
     
     def get_todos_los_jugadores(self) -> List[Jugador]:
-        """Retorna lista de todos los jugadores"""
+        """Devuelve una copia de la lista de jugadores activos.
+
+        Returns:
+            Lista de instancias ``Jugador`` actualmente en la partida.
+        """
         return self.jugadores.copy()
     
     def remover_jugador(self, jugador: Jugador):
-        """Remueve un jugador del juego"""
+        """Elimina un jugador de la partida por acusación final incorrecta.
+
+        Ajusta el índice de turno si es necesario para que no apunte fuera
+        de los límites de la lista actualizada.
+
+        Args:
+            jugador: Jugador que debe ser eliminado.
+        """
         if jugador in self.jugadores:
             self.jugadores.remove(jugador)
             if self.turno_actual >= len(self.jugadores):
