@@ -1,35 +1,100 @@
-# board_game
+# 🕯️ board_game
 
-board games
+### *Misterio, elegancia y tablero*  
+#### Un rincón **retro moderno** para jugar, deducir y disfrutar una estética digna de Agatha Christie.
 
-## Installed Tools
+---
 
-### context-mode
-Context window optimization for AI coding agents. Installed globally via npm.
+## ✦ El caso
 
-**Features:**
-- Sandbox tools keep raw data out of the context window (98% reduction)
-- Session continuity via SQLite tracking
-- 11 MCP tools: `ctx_batch_execute`, `ctx_execute`, `ctx_execute_file`, `ctx_index`, `ctx_search`, `ctx_fetch_and_index`, `ctx_stats`, `ctx_doctor`, `ctx_upgrade`, `ctx_purge`, `ctx_insight`
+En este repositorio vive **Misterio en la Mansión Blackwood**, un juego inspirado en la intriga clásica: habitaciones cerradas, sospechosos impecablemente vestidos, armas discretas y una verdad esperando ser revelada.
 
-**Usage:**
+La idea es simple y deliciosa:
+
+- descubrir **quién** cometió el crimen,
+- averiguar **dónde** ocurrió,
+- y demostrar **con qué** se llevó a cabo.
+
+Todo con un aire de novela detectivesca y una presentación más limpia, actual y cinematográfica.
+
+---
+
+## 🕵️ Contenido principal
+
+El corazón del proyecto está en:
+
+`clue-agatha-christie/`
+
+Dentro encontrarás:
+
+- **juego en Python** listo para ejecutarse en consola,
+- **lógica del tablero, cartas y jugadores**,
+- **tests unitarios**,
+- y una carpeta **frontend** para la parte visual del proyecto.
+
+---
+
+## 🚀 Cómo empezar
+
+### Ejecutar el juego
+
 ```bash
-context-mode doctor    # Check installation and configuration
-context-mode stats     # View context savings
+cd clue-agatha-christie
+python main.py
 ```
 
-### i-have-adhd
-ADHD-friendly output skill for coding agents.
+### Ejecutar los tests
 
-**Features:**
-- Leads with the next action
-- Numbers multi-step tasks
-- Ends with one concrete next step
-- Suppresses tangents
-- Provides specific time estimates
-- Makes wins visible
+```bash
+cd clue-agatha-christie
+python tests/test_juego.py
+```
 
-**Location:** `/usr/lib/node_modules/context-mode/skills/i-have-adhd/SKILL.md`
+### Frontend
 
-**Usage:**
-Invoke with `/i-have-adhd` in Claude Code or compatible agents.
+```bash
+cd clue-agatha-christie/frontend
+npm install
+npm run dev
+```
+
+---
+
+## 🎭 La atmósfera
+
+Este proyecto apuesta por una mezcla muy concreta:
+
+- **retro**, por su inspiración en los grandes misterios clásicos;
+- **moderno**, por su organización, posibilidad de expansión y enfoque visual;
+- **lúdico**, porque todo aquí gira en torno al placer de investigar, acusar y resolver.
+
+Si te gustan los salones con secretos, las bibliotecas con sombra y los finales donde todo encaja en la última página, estás en casa.
+
+---
+
+## 🗂️ Estructura general
+
+```text
+board_game/
+├── README.md
+├── LICENSE
+├── clue-agatha-christie/
+│   ├── main.py
+│   ├── README.md
+│   ├── src/
+│   ├── tests/
+│   ├── docs/
+│   └── frontend/
+└── pi-subagents/
+```
+
+---
+
+## 📜 Licencia
+
+Este proyecto se distribuye bajo licencia **MIT**.  
+Consulta `LICENSE` para más detalles.
+
+---
+
+### *“Todo el mundo tiene algo que ocultar, querido detective.”*
