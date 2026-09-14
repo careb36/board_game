@@ -73,7 +73,7 @@ class Juego:
         
         self.juego_iniciado = True
         self.historial.append("✅ Partida iniciada")
-        self.historial.append(f"📁 Crimen: {self._obtener_resumen_crimen()}")
+        # self.historial.append(f"📁 Crimen: {self._obtener_resumen_crimen()}")
         
         return True
     
