@@ -1,0 +1,14 @@
+[run]
+source = backend/
+omit = 
+    */__pycache__/*
+    */tests/*
+    */venv/*
+
+[report]
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    raise AssertionError
+    raise NotImplementedError
+    if __name__ == .__main__.:
