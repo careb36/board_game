@@ -1,0 +1,4 @@
+# Requerimientos para Misterio en la Mansión Blackwood
+# No se requieren dependencias externas - solo Python estándar
+
+python-version >= 3.10
