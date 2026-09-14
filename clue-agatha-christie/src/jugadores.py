@@ -92,6 +92,9 @@ class GestorJugadores:
     
     def siguiente_turno(self):
         """Avanza al siguiente turno"""
+        if not self.jugadores:
+            self.turno_actual = 0
+            return
         self.turno_actual = (self.turno_actual + 1) % len(self.jugadores)
     
     def jugador_actual(self) -> Optional[Jugador]:
