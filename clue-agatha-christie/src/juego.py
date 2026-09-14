@@ -1,6 +1,11 @@
 """
 Misterio en la Mansión Blackwood - Lógica Principal del Juego
 Inspirado en Agatha Christie
+
+Este módulo contiene las clases centrales que orquestan toda la partida:
+- Acusacion: modelo inmutable de una acusación (sospechoso, habitación y arma).
+- Juego: controlador principal que inicializa la partida, gestiona los turnos,
+  valida movimientos, procesa acusaciones y determina el ganador.
 """
 
 import random
@@ -11,9 +16,22 @@ from src.jugadores import GestorJugadores, Jugador
 
 
 class Acusacion:
-    """Representa una acusación formulada por un jugador"""
+    """Modelo de datos para una acusación formulada en el juego.
+
+    Attributes:
+        sospechoso (str): Nombre del sospechoso acusado.
+        habitacion (str): Nombre de la habitación donde se cometió el crimen.
+        arma (str): Nombre del arma utilizada.
+    """
     
     def __init__(self, sospechoso: str, habitacion: str, arma: str):
+        """Inicializa la acusación con sus tres componentes.
+
+        Args:
+            sospechoso: Nombre del sospechoso acusado.
+            habitacion: Nombre de la habitación del crimen.
+            arma: Nombre del arma empleada.
+        """
         self.sospechoso = sospechoso
         self.habitacion = habitacion
         self.arma = arma
@@ -23,9 +41,27 @@ class Acusacion:
 
 
 class Juego:
-    """Clase principal que gestiona toda la partida"""
+    """Controlador principal de la partida.
+
+    Orquesta el ciclo de vida completo del juego: configuración de jugadores,
+    preparación del mazo, asignación de posiciones iniciales, validación de
+    movimientos y procesamiento de acusaciones.
+
+    Attributes:
+        mazo (Mazo): Mazo de cartas del juego.
+        tablero (Tablero): Tablero con las habitaciones y conexiones.
+        gestor_jugadores (GestorJugadores): Gestor de jugadores y turnos.
+        carta_crimen (Dict[TipoCarta, Carta]): Las tres cartas secretas que
+            forman la solución del crimen.
+        juego_iniciado (bool): ``True`` después de llamar a ``iniciar_partida``.
+        ganador (Optional[Jugador]): Jugador que ha ganado, o ``None`` si la
+            partida no ha terminado.
+        historial (List[str]): Registro cronológico de todas las acciones
+            realizadas durante la partida.
+    """
     
     def __init__(self):
+        """Inicializa el juego con todos los componentes en estado inicial."""
         self.mazo = Mazo()
         self.tablero = Tablero()
         self.gestor_jugadores = GestorJugadores()
@@ -35,9 +71,18 @@ class Juego:
         self.historial: List[str] = []
     
     def configurar_juego(self, nombres_jugadores: List[Tuple[str, bool]]) -> bool:
-        """
-        Configura el juego con los jugadores dados
-        nombres_jugadores: lista de tuplas (nombre, es_ia)
+        """Registra a los jugadores que participarán en la partida.
+
+        Valida que el número de jugadores esté entre 2 y 6 antes de
+        añadirlos al gestor.
+
+        Args:
+            nombres_jugadores: Lista de tuplas ``(nombre, es_ia)`` con los
+                datos de cada jugador.
+
+        Returns:
+            ``True`` si la configuración fue exitosa, ``False`` si el número
+            de jugadores es inválido.
         """
         if len(nombres_jugadores) < 2 or len(nombres_jugadores) > 6:
             self.historial.append("❌ Error: Se requieren 2-6 jugadores")
@@ -50,7 +95,16 @@ class Juego:
         return True
     
     def iniciar_partida(self) -> bool:
-        """Inicializa una nueva partida"""
+        """Inicializa todos los elementos de la partida y la pone en marcha.
+
+        Prepara el mazo, selecciona las cartas del crimen, reparte las cartas
+        restantes entre los jugadores y los coloca en habitaciones iniciales
+        aleatorias.
+
+        Returns:
+            ``True`` si la partida se inició correctamente, ``False`` si no
+            hay jugadores configurados.
+        """
         if not self.gestor_jugadores.get_todos_los_jugadores():
             self.historial.append("❌ Error: No hay jugadores configurados")
             return False
@@ -78,7 +132,12 @@ class Juego:
         return True
     
     def _obtener_resumen_crimen(self) -> str:
-        """Retorna resumen del crimen (solo para debugging/testing)"""
+        """Genera un texto resumen de las cartas del crimen (solo para depuración).
+
+        Returns:
+            Cadena con el nombre del sospechoso, habitación y arma separados
+            por " + ".
+        """
         return (
             f"{self.carta_crimen[TipoCarta.SOSPECHOSO].nombre} + "
             f"{self.carta_crimen[TipoCarta.HABITACION].nombre} + "
@@ -86,7 +145,21 @@ class Juego:
         )
     
     def mover_jugador(self, jugador: Jugador, destino: HabitacionNombre) -> bool:
-        """Mueve un jugador a una habitación válida"""
+        """Mueve a un jugador a una habitación adyacente válida.
+
+        Verifica que la partida esté en marcha, que el jugador tenga una
+        posición asignada y que el movimiento sea válido según las conexiones
+        del tablero.
+
+        Args:
+            jugador: Jugador que se quiere mover.
+            destino: Habitación de destino.
+
+        Returns:
+            ``True`` si el movimiento fue ejecutado correctamente, ``False``
+            en caso de error (partida no iniciada, jugador sin posición o
+            movimiento inválido).
+        """
         if not self.juego_iniciado:
             return False
         
@@ -114,9 +187,25 @@ class Juego:
         habitacion: str, 
         arma: str
     ) -> Tuple[bool, Optional[str]]:
-        """
-        Un jugador formula una acusación
-        Retorna (exitosa, carta_revelada o None)
+        """Procesa una acusación normal formulada por un jugador.
+
+        Comprueba que el jugador esté en la habitación acusada y recorre al
+        resto de jugadores (en orden de turno) para ver si alguno puede
+        refutar la acusación mostrando una de sus cartas.
+
+        Args:
+            jugador: Jugador que formula la acusación.
+            sospechoso: Nombre del sospechoso acusado.
+            habitacion: Nombre de la habitación acusada.
+            arma: Nombre del arma acusada.
+
+        Returns:
+            Tupla ``(exitosa, carta_revelada)``:
+
+            - ``exitosa`` es ``True`` si la acusación fue procesada
+              correctamente (independientemente de si fue refutada).
+            - ``carta_revelada`` es el nombre de la carta con la que se
+              refutó, o ``None`` si nadie pudo refutar.
         """
         if not self.juego_iniciado:
             return False, None
@@ -157,9 +246,19 @@ class Juego:
         return True, carta_refutada.nombre if carta_refutada else None
     
     def acusacion_final(self, jugador: Jugador, acusacion: Acusacion) -> bool:
-        """
-        Un jugador hace una acusación final para ganar
-        Retorna True si gana, False si pierde
+        """Procesa la acusación final con la que un jugador intenta ganar.
+
+        Compara los tres elementos de la acusación con las cartas secretas del
+        sobre del crimen. Si acierta, declara al jugador como ganador. Si
+        falla, lo elimina de la partida.
+
+        Args:
+            jugador: Jugador que realiza la acusación final.
+            acusacion: Acusación con el sospechoso, habitación y arma elegidos.
+
+        Returns:
+            ``True`` si la acusación era correcta y el jugador ha ganado,
+            ``False`` si era incorrecta y el jugador queda eliminado.
         """
         if not self.juego_iniciado:
             return False
@@ -189,7 +288,17 @@ class Juego:
         return es_correcto
     
     def obtener_estado(self) -> Dict:
-        """Retorna el estado actual del juego"""
+        """Devuelve un resumen del estado actual de la partida.
+
+        Returns:
+            Diccionario con los campos:
+
+            - ``"jugadores"``: lista de dicts con ``nombre``, ``es_ia``,
+              ``habitacion`` y número de ``cartas`` de cada jugador.
+            - ``"turno_actual"``: índice del turno en curso.
+            - ``"ganador"``: nombre del ganador o ``None``.
+            - ``"historial"``: últimas 10 acciones registradas.
+        """
         return {
             "jugadores": [
                 {
@@ -206,7 +315,14 @@ class Juego:
         }
     
     def mostrar_tablero_completo(self) -> str:
-        """Muestra el estado completo del tablero"""
+        """Genera una representación visual completa del estado de la partida.
+
+        Muestra cada habitación con los jugadores que se encuentran en ella,
+        el jugador en turno y el ganador si la partida ha concluido.
+
+        Returns:
+            Cadena de texto multilínea lista para imprimir en consola.
+        """
         output = []
         output.append("\n" + "=" * 50)
         output.append("🏰 ESTADO DE LA MANSIÓN BLACKWOOD")
